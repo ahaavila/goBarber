@@ -16,15 +16,15 @@ class Appointment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  provider_id: string;
+
   // Relacionamento do Appointment com o User
   @ManyToOne(() => User)
   @JoinColumn({ name: 'provider_id' })
   provider: User;
 
-  @Column()
-  provider_id: string;
-
-  @Column('time with time zone')
+  @Column('timestamp with time zone')
   date: Date;
 
   @CreateDateColumn()
