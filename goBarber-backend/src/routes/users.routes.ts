@@ -11,27 +11,23 @@ const upload = multer(uploadConfig);
 // Rota: Receber uma requisição, chamar outro arquivo, devolver uma resposta.
 
 usersRouter.post('/', async (request, response) => {
-  try {
-    const { name, email, password } = request.body;
+  const { name, email, password } = request.body;
 
-    // instancio meu service
-    const createUser = new CreateUserService();
+  // instancio meu service
+  const createUser = new CreateUserService();
 
-    // Rodo a criação de usuario
-    const user = await createUser.execute({
-      name,
-      email,
-      password,
-    });
+  // Rodo a criação de usuario
+  const user = await createUser.execute({
+    name,
+    email,
+    password,
+  });
 
-    // deleto o password pra nao aparecer no retorno, mas continua no banco
-    delete user.password;
+  // deleto o password pra nao aparecer no retorno, mas continua no banco
+  delete user.password;
 
-    // Retorno meu user criado
-    return response.json(user);
-  } catch (err) {
-    return response.status(400).json({ error: err.message });
-  }
+  // Retorno meu user criado
+  return response.json(user);
 });
 
 usersRouter.patch(
@@ -39,21 +35,17 @@ usersRouter.patch(
   ensureAuthenticated,
   upload.single('avatar'),
   async (request, response) => {
-    try {
-      const updateUserAvatar = new UpdateUserAvatarService();
+    const updateUserAvatar = new UpdateUserAvatarService();
 
-      const user = await updateUserAvatar.execute({
-        user_id: request.user.id,
-        avatarFilename: request.file.filename,
-      });
+    const user = await updateUserAvatar.execute({
+      user_id: request.user.id,
+      avatarFilename: request.file.filename,
+    });
 
-      delete user.password;
+    delete user.password;
 
-      return response.json(user);
-    } catch (err) {
-      return response.status(400).json({ error: err.message });
-    }
-  },
+    return response.json(user);
+  }
 );
 
 export default usersRouter;

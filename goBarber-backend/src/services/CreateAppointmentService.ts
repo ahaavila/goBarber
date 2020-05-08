@@ -5,6 +5,7 @@ import { getCustomRepository } from 'typeorm';
 
 import Appointment from '../models/Appointment';
 import AppointmentsRepository from '../repositories/AppointmentsRepository';
+import AppError from '../errors/AppError';
 
 interface Request {
   provider_id: string;
@@ -31,7 +32,7 @@ class CreateAppointmentService {
     // Se a data não estiver disponível
     if (findAppointmentInSameDate) {
       // Retorna essa mensagem de erro para a minha rota
-      throw Error('This appointment is already booked');
+      throw new AppError('This appointment is already booked');
     }
 
     // Crio o appointment
