@@ -1,6 +1,13 @@
 // Contexto é usado para criar algo que vai ser usado em vários lugares.
 
-import React, { createContext, useCallback, useState, useContext } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useState,
+  useContext,
+  useEffect,
+} from 'react';
+import AsyncStorage from '@react-native-community/async-storage';
 import api from '../services/api';
 
 interface AuthState {
@@ -23,20 +30,25 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 // Processo de autenticação
 const AuthProvider: React.FC = ({ children }) => {
-  const [data, setData] = useState<AuthState>(() => {
-    // Busco do localStorage o meu token e o meu user
-    // Essa parte da função só vai ser executada quando o usuario der um refresh na pagina, ou sair e voltar //
-    const token = localStorage.getItem('@GoBarber:token');
-    const user = localStorage.getItem('@GoBarber:user');
+  const [data, setData] = useState<AuthState>({} as AuthState);
 
-    // Se caso eles existirem eu retorno eles
-    if (token && user) {
-      return { token, user: JSON.parse(user) };
+  // Função que vai carregar os dados do token
+  useEffect(() => {
+    async function loadStorageData(): Promise<void> {
+      // Busco do AsyncStorage o meu token e o meu user
+      // Essa parte da função só vai ser executada quando o usuario der um refresh na pagina, ou sair e voltar //
+      const [token, user] = await AsyncStorage.multiGet([
+        '@GoBarber:token',
+        '@GoBarber:user',
+      ]);
+
+      if (token[1] && user[1]) {
+        setData({ token: token[1], user: JSON.parse(user[1]) });
+      }
     }
 
-    // Caso não exista um dos dois, retorno vazio
-    return {} as AuthState;
-  });
+    loadStorageData();
+  }, []);
 
   // Função para fazer o login //
   const signIn = useCallback(async ({ email, password }) => {
@@ -45,25 +57,25 @@ const AuthProvider: React.FC = ({ children }) => {
       password,
     });
 
-    // Salvando o token no localStorage //
+    // Salvando o token no AsyncStorage //
     // Pego o token e o user da minha chamada ao backend
     const { token, user } = response.data;
 
-    localStorage.setItem('@GoBarber:token', token);
-    localStorage.setItem('@GoBarber:user', JSON.stringify(user));
-    // Fim localStorage //
+    await AsyncStorage.multiSet([
+      ['@GoBarber:token', token],
+      ['@GoBarber:user', JSON.stringify(user)],
+    ]);
+    // Fim AsyncStorage //
 
     // Assim que é feito o login, eu alimento meu Data com o token e o user
     setData({ token, user });
   }, []);
 
   // Função para fazer logOut //
-  const signOut = useCallback(() => {
-    // removo os dados de login do localStorage
-    localStorage.removeItem('@GoBarber:token');
-    localStorage.removeItem('@GoBarber:token');
+  const signOut = useCallback(async () => {
+    // removo os dados de login do AsyncStorage
+    await AsyncStorage.multiRemove(['@GoBarber:token', '@GoBarber:token']);
 
-    // Removo os dados de login do usuario
     setData({} as AuthState);
   }, []);
 
