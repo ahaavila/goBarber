@@ -1,21 +1,24 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { ActivityIndicator, View } from 'react-native';
+import AuthRoutes from './auth.routes';
+import AppRoutes from './app.routes';
 
-import SignIn from '../pages/SignIn';
-import SignUp from '../pages/SignUp';
+import { useAuth } from '../hooks/auth';
 
-const Auth = createStackNavigator();
+const Routes: React.FC = () => {
+  const { user, loading } = useAuth();
 
-const AuthRoutes: React.FC = () => (
-  <Auth.Navigator
-    screenOptions={{
-      headerShown: false,
-      cardStyle: { backgroundColor: '#312e38' },
-    }}
-  >
-    <Auth.Screen name="SignIn" component={SignIn} />
-    <Auth.Screen name="SignUp" component={SignUp} />
-  </Auth.Navigator>
-);
+  // Se a tela ainda não recebeu os dados de login, mostro um loading
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#999" />
+      </View>
+    );
+  }
 
-export default AuthRoutes;
+  // Quando eu recebi os dados de login, mostro a tela
+  return user ? <AppRoutes /> : <AuthRoutes />;
+};
+
+export default Routes;
