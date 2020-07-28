@@ -1,13 +1,13 @@
 // Services: Contém as minhas regras de negócio.
 // O Service nunca vai ter as informações de request e response
 import { startOfHour } from 'date-fns';
-import { getCustomRepository } from 'typeorm';
 
-import Appointment from '../models/Appointment';
-import AppointmentsRepository from '../repositories/AppointmentsRepository';
-import AppError from '../errors/AppError';
+import AppError from '@shared/errors/AppError';
 
-interface Request {
+import Appointment from '../infra/typeorm/entities/Appointment';
+import IAppointmentsRepository from '../repositories/iAppointmentsRepository';
+
+interface IRequest {
   provider_id: string;
   date: Date;
 }
@@ -17,15 +17,15 @@ interface Request {
 // D -> Dependency Invertion Principle ->
 
 class CreateAppointmentService {
+  constructor(private appointmentsRepository: IAppointmentsRepository) {}
+
   // Método que vai executar o meu service
   // Todo metodo async tem que ser passado como Promise o meu tipo
-  public async execute({ date, provider_id }: Request): Promise<Appointment> {
-    const appointmentsRepository = getCustomRepository(AppointmentsRepository);
-
+  public async execute({ date, provider_id }: IRequest): Promise<Appointment> {
     const appointmentDate = startOfHour(date);
 
     // Verifica se a data está disponível
-    const findAppointmentInSameDate = await appointmentsRepository.findByDate(
+    const findAppointmentInSameDate = await this.appointmentsRepository.findByDate(
       appointmentDate,
     );
 
@@ -36,13 +36,10 @@ class CreateAppointmentService {
     }
 
     // Crio o appointment
-    const appointment = appointmentsRepository.create({
+    const appointment = await this.appointmentsRepository.create({
       provider_id,
       date: appointmentDate,
     });
-
-    // salvo o meu appointment
-    await appointmentsRepository.save(appointment);
 
     // Retorna o Appointment para a Rota ou para outro método
     return appointment;

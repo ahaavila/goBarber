@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { parseISO } from 'date-fns';
-import { getCustomRepository } from 'typeorm';
 
-import AppointmentsRepository from '../repositories/AppointmentsRepository';
-import CreateAppointmentService from '../services/CreateAppointmentService';
-import ensureAuthenticated from '../middlewares/ensureAuthenticated';
+import AppointmentsRepository from '@modules/appointments/infra/typeorm/repositories/AppointmentsRepository';
+import CreateAppointmentService from '@modules/appointments/services/CreateAppointmentService';
+import ensureAuthenticated from '@modules/users/infra/http/middlewares/ensureAuthenticated';
 
 const appointmentsRouter = Router();
+// instancio o meu repositorio de appointments
+const appointmentsRepository = new AppointmentsRepository();
 
 // Rota: Receber uma requisição, chamar outro arquivo, devolver uma resposta.
 
@@ -14,14 +15,12 @@ const appointmentsRouter = Router();
 appointmentsRouter.use(ensureAuthenticated);
 
 // Rotas appointments
-appointmentsRouter.get('/', async (request, response) => {
-  // seleciono o meu repositorio
-  const appointmentsRepository = getCustomRepository(AppointmentsRepository);
-  // busco todos os appointments
-  const appointments = await appointmentsRepository.find();
+// appointmentsRouter.get('/', async (request, response) => {
+//   // busco todos os appointments
+//   const appointments = await appointmentsRepository.find();
 
-  return response.json(appointments);
-});
+//   return response.json(appointments);
+// });
 
 appointmentsRouter.post('/', async (request, response) => {
   // Recebo meus dados pelo body.
@@ -31,7 +30,9 @@ appointmentsRouter.post('/', async (request, response) => {
   const parsedDate = parseISO(date);
 
   // Chamo meu service de criação de Appointment
-  const createAppointment = new CreateAppointmentService();
+  const createAppointment = new CreateAppointmentService(
+    appointmentsRepository,
+  );
 
   // Crio o meu Appointment
   const appointment = await createAppointment.execute({
