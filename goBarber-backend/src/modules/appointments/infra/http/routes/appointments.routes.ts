@@ -6,8 +6,6 @@ import CreateAppointmentService from '@modules/appointments/services/CreateAppoi
 import ensureAuthenticated from '@modules/users/infra/http/middlewares/ensureAuthenticated';
 
 const appointmentsRouter = Router();
-// instancio o meu repositorio de appointments
-const appointmentsRepository = new AppointmentsRepository();
 
 // Rota: Receber uma requisição, chamar outro arquivo, devolver uma resposta.
 
@@ -28,6 +26,9 @@ appointmentsRouter.post('/', async (request, response) => {
 
   // Transformo a minha data de string para Date
   const parsedDate = parseISO(date);
+
+  // instancio o meu repositorio de appointments
+  const appointmentsRepository = new AppointmentsRepository();
 
   // Chamo meu service de criação de Appointment
   const createAppointment = new CreateAppointmentService(
