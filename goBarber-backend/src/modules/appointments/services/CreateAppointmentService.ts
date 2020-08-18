@@ -1,6 +1,7 @@
 // Services: Contém as minhas regras de negócio.
 // O Service nunca vai ter as informações de request e response
 import { startOfHour } from 'date-fns';
+import { container, inject, injectable } from 'tsyringe';
 
 import AppError from '@shared/errors/AppError';
 
@@ -16,8 +17,13 @@ interface IRequest {
 // S -> Single Responsability Principle -> Cada arquivo da minha aplicação tem uma responsabilidade
 // D -> Dependency Invertion Principle ->
 
+// Falo que essa classe pode receber injeções de dependencias
+@injectable()
 class CreateAppointmentService {
-  constructor(private appointmentsRepository: IAppointmentsRepository) {}
+  constructor(
+    @inject('AppointmentsRepository')
+    private appointmentsRepository: IAppointmentsRepository,
+  ) {}
 
   // Método que vai executar o meu service
   // Todo metodo async tem que ser passado como Promise o meu tipo
