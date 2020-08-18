@@ -1,7 +1,7 @@
 // Services: Contém as minhas regras de negócio.
 // O Service nunca vai ter as informações de request e response
 import { startOfHour } from 'date-fns';
-import { container, inject, injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 
 import AppError from '@shared/errors/AppError';
 
