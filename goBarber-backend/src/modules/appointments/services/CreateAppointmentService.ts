@@ -1,5 +1,6 @@
 // Services: Contém as minhas regras de negócio.
 // O Service nunca vai ter as informações de request e response
+import 'reflect-metadata';
 import { startOfHour } from 'date-fns';
 import { inject, injectable } from 'tsyringe';
 
