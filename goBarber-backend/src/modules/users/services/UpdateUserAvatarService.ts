@@ -5,8 +5,10 @@ import { injectable, inject } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 import uploadConfig from '@config/upload';
 
-import User from '../infra/typeorm/entities/User';
+import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';
 import IUsersRepository from '../repositories/IUsersRepository';
+
+import User from '../infra/typeorm/entities/User';
 
 interface IRequest {
   user_id: string;
@@ -18,6 +20,9 @@ class UpdateUserAvatarService {
   constructor(
     @inject('UsersRepository')
     private usersRepository: IUsersRepository,
+
+    @inject('StorageProvider')
+    private storageProvider: IStorageProvider,
   ) {}
 
   public async execute({ user_id, avatarFilename }: IRequest): Promise<User> {
@@ -30,20 +35,15 @@ class UpdateUserAvatarService {
 
     // Verifico se já existia um avatar anteriormente nesse usuario //
     if (user.avatar) {
-      // Deletar avatar anterior
-      const userAvatarFilePath = path.join(uploadConfig.directory, user.avatar);
-      // Verifico se já existe esse arquivo
-      const userAvatarFileExists = await fs.promises.stat(userAvatarFilePath);
-
-      // se ele existir eu deleto ele
-      if (userAvatarFileExists) {
-        await fs.promises.unlink(userAvatarFilePath);
-      }
+      // Deleto o avatar anterior
+      await this.storageProvider.deleteFile(user.avatar);
     }
+    // Salvo o novo avatar
+    const filename = await this.storageProvider.saveFile(avatarFilename);
     // Fim - Verifico se já existia um avatar anteriormente nesse usuario //
 
     // Jogo o meu avatar para dentro do campo avatar
-    user.avatar = avatarFilename;
+    user.avatar = filename;
 
     // Atualizo meu user com o avatar
     await this.usersRepository.save(user);

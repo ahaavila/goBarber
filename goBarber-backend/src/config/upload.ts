@@ -5,7 +5,8 @@ import crypto from 'crypto';
 const tmpFolder = path.resolve(__dirname, '..', '..', 'tmp');
 
 export default {
-  directory: tmpFolder,
+  tmpFolder,
+  uploadsFolder: path.resolve(tmpFolder, 'uploads'),
   // Digo que vou salvar as imagens dentro do meu disco
   storage: multer.diskStorage({
     // Onde vão ficar as imagens
